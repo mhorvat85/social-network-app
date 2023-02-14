@@ -23,7 +23,7 @@ exports.register = function (req, res) {
 
 exports.home = function (req, res) {
   if (req.session.user) {
-    res.send("Welcome to the actual application!");
+    res.send("Welcome to the actual application!!!");
   } else {
     res.render("home-guest");
   }
