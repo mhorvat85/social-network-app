@@ -4,9 +4,9 @@ exports.login = function (req, res) {
   let user = new User(req.body);
   user
     .login()
-    .then((result) => {
+    .then(() => {
       req.session.user = { username: user.data.username };
-      res.send(result);
+      req.session.save(() => res.redirect("/"));
     })
     .catch((err) => res.send(err));
 };
