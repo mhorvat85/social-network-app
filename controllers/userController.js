@@ -8,7 +8,10 @@ exports.login = function (req, res) {
       req.session.user = { username: user.data.username };
       req.session.save(() => res.redirect("/"));
     })
-    .catch((err) => res.send(err));
+    .catch((err) => {
+      req.flash("errors", err); // req.session.flash.errors = [err]
+      req.session.save(() => res.redirect("/"));
+    });
 };
 
 exports.logout = function (req, res) {
@@ -29,6 +32,6 @@ exports.home = function (req, res) {
   if (req.session.user) {
     res.render("home-dashboard", { username: req.session.user.username });
   } else {
-    res.render("home-guest");
+    res.render("home-guest", { errors: req.flash("errors") });
   }
 };
