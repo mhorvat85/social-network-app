@@ -42,13 +42,13 @@ User.prototype.validate = function () {
     this.errors.push("You must provide a password.");
   }
   if (this.data.password.length > 0 && this.data.password.length < 12) {
-    this.errors.push("Password must be at least 12 characters");
+    this.errors.push("Password must be at least 12 characters.");
   }
   if (this.data.password.length > 50) {
     this.errors.push("Password cannot exceed 50 characters.");
   }
-  if (this.data.username.length > 0 && this.data.password.length < 3) {
-    this.errors.push("Username must be at least 3 characters");
+  if (this.data.username.length > 0 && this.data.username.length < 3) {
+    this.errors.push("Username must be at least 3 characters.");
   }
   if (this.data.username.length > 30) {
     this.errors.push("Username cannot exceed 30 characters.");
