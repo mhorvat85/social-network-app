@@ -1,4 +1,6 @@
+const { ObjectId } = require("mongodb");
 const postsCollection = require("../db").db().collection("posts");
+const User = require("./User");
 
 let Post = function (data, userId) {
   this.data = data;
@@ -17,7 +19,7 @@ Post.prototype.cleanUp = function () {
     title: this.data.title.trim(),
     body: this.data.body.trim(),
     createdDate: new Date(),
-    author: this.userId,
+    author: ObjectId(this.userId),
   };
 };
 
@@ -46,6 +48,50 @@ Post.prototype.create = function () {
         });
     } else {
       reject(this.errors);
+    }
+  });
+};
+
+Post.findSingleById = function (id) {
+  return new Promise(async function (resolve, reject) {
+    if (typeof id !== "string" || !ObjectId.isValid(id)) {
+      reject();
+      return;
+    }
+    let posts = await postsCollection
+      .aggregate([
+        { $match: { _id: new ObjectId(id) } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "author",
+            foreignField: "_id",
+            as: "authorDocument",
+          },
+        },
+        {
+          $project: {
+            title: 1,
+            body: 1,
+            createdDate: 1,
+            author: { $arrayElemAt: ["$authorDocument", 0] },
+          },
+        },
+      ])
+      .toArray();
+    // cleaning up author property
+    posts = posts.map((post) => {
+      post.author = {
+        username: post.author.username,
+        avatar: new User(post.author, true).avatar,
+      };
+      return post;
+    });
+    if (posts.length) {
+      console.log(posts[0]);
+      resolve(posts[0]);
+    } else {
+      reject();
     }
   });
 };
