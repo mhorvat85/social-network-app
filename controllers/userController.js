@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Post = require("../models/Post");
 
 exports.mustBeLoggedIn = function (req, res, next) {
   if (req.session.user) {
@@ -60,4 +61,31 @@ exports.home = function (req, res) {
       regErrors: req.flash("regErrors"),
     });
   }
+};
+
+exports.ifUserExists = function (req, res, next) {
+  User.findByUsername(req.params.username)
+    .then((userDocument) => {
+      // for next func in stack
+      req.profileUser = userDocument;
+      next();
+    })
+    .catch(() => {
+      res.render("404");
+    });
+};
+
+exports.profilePostsScreen = function (req, res) {
+  Post.findByAuthorId(req.profileUser._id)
+    .then((posts) => {
+      console.log(posts);
+      res.render("profile", {
+        profileUsername: req.profileUser.username,
+        profileAvatar: req.profileUser.avatar,
+        posts: posts,
+      });
+    })
+    .catch(() => {
+      res.render("404");
+    });
 };
