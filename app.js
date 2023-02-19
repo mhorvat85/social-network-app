@@ -15,8 +15,14 @@ let sessionOptions = session({
 app.use(sessionOptions);
 app.use(flash());
 
-// globally accessible object within ejs template
 app.use((req, res, next) => {
+  // current user id available on req object
+  if (req.session.user) {
+    req.visitorId = req.session.user._id;
+  } else {
+    req.visitorId = 0;
+  }
+  // globally accessible object within ejs template
   res.locals.user = req.session.user;
   next();
 });
