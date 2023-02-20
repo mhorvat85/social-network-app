@@ -57,7 +57,6 @@ exports.home = function (req, res) {
     res.render("home-dashboard");
   } else {
     res.render("home-guest", {
-      errors: req.flash("errors"),
       regErrors: req.flash("regErrors"),
     });
   }
@@ -78,7 +77,7 @@ exports.ifUserExists = function (req, res, next) {
 exports.profilePostsScreen = function (req, res) {
   Post.findByAuthorId(req.profileUser._id)
     .then((posts) => {
-      console.log(posts);
+      console.log(`profilePostsScreen`, posts);
       res.render("profile", {
         profileUsername: req.profileUser.username,
         profileAvatar: req.profileUser.avatar,
