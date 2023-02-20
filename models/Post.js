@@ -156,4 +156,20 @@ Post.findByAuthorId = function (authorId) {
   ]);
 };
 
+Post.delete = function (postId, userId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let post = await Post.findSingleById(postId, userId);
+      if (post.isVisitorOwner) {
+        await postsCollection.deleteOne({ _id: new ObjectId(postId) });
+        resolve();
+      } else {
+        reject();
+      }
+    } catch {
+      reject();
+    }
+  });
+};
+
 module.exports = Post;
