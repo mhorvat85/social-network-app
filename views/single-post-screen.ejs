@@ -36,7 +36,7 @@
     post.createdDate.getFullYear() %>
   </p>
 
-  <div class="body-content"><%= post.body %></div>
+  <div class="body-content"><%- filterUserHTML(post.body) %></div>
 </div>
 
 <%- include('includes/footer') %>
