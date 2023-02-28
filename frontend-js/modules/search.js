@@ -40,7 +40,7 @@ export default class Search {
         searchTerm: this.inputField.value,
       })
       .then((response) => {
-        console.log(result);
+        console.log(response.data);
       })
       .catch(() => {
         alert("Request failed.");
