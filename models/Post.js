@@ -3,6 +3,8 @@ const sanitizeHTML = require("sanitize-html");
 const postsCollection = require("../db").db().collection("posts");
 const User = require("./User");
 
+postsCollection.createIndex({ title: "text", body: "text" }); // comment out when created (programmatically created)
+
 let Post = function (data, userId, requestedPostId) {
   this.data = data;
   this.errors = [];
@@ -121,9 +123,12 @@ Post.reusablePostQuery = function (
       .concat(finalOperations);
 
     let posts = await postsCollection.aggregate(aggOperations).toArray();
+    console.log(posts);
     // cleaning up author property
     posts = posts.map((post) => {
       post.isVisitorOwner = post.authorId.equals(visitorId);
+      post.authorId = undefined;
+
       post.author = {
         username: post.author.username,
         avatar: new User(post.author, true).avatar,
