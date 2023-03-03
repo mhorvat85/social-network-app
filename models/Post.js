@@ -198,4 +198,11 @@ Post.search = function (searchTerm) {
   });
 };
 
+Post.countPostsByAuthor = function (id) {
+  return new Promise(async (resolve, reject) => {
+    let postsCount = await postsCollection.countDocuments({ author: id });
+    resolve(postsCount);
+  });
+};
+
 module.exports = Post;
