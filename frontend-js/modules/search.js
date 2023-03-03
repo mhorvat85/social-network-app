@@ -48,7 +48,6 @@ export default class Search {
         searchTerm: this.inputField.value,
       })
       .then((response) => {
-        console.log(response.data);
         this.renderResultsHTML(response.data);
       })
       .catch(() => {

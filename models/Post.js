@@ -1,6 +1,7 @@
 const { ObjectId } = require("mongodb");
 const sanitizeHTML = require("sanitize-html");
 const postsCollection = require("../db").db().collection("posts");
+const followsCollection = require("../db").db().collection("follows");
 const User = require("./User");
 
 postsCollection.createIndex({ title: "text", body: "text" }); // comment out when created (programmatically created)
@@ -123,7 +124,6 @@ Post.reusablePostQuery = function (
       .concat(finalOperations);
 
     let posts = await postsCollection.aggregate(aggOperations).toArray();
-    console.log(posts);
     // cleaning up author property
     posts = posts.map((post) => {
       post.isVisitorOwner = post.authorId.equals(visitorId);
@@ -152,7 +152,6 @@ Post.findSingleById = function (id, visitorId) {
     );
 
     if (posts.length) {
-      console.log(`findSingleById`, posts[0]);
       resolve(posts[0]);
     } else {
       reject();
@@ -203,6 +202,19 @@ Post.countPostsByAuthor = function (id) {
     let postsCount = await postsCollection.countDocuments({ author: id });
     resolve(postsCount);
   });
+};
+
+Post.getFeed = async function (id) {
+  let followedUsers = await followsCollection
+    .find({ authorId: new ObjectId(id) })
+    .toArray();
+  let followedIds = followedUsers.map(
+    (followedUser) => followedUser.followedId
+  );
+  return Post.reusablePostQuery([
+    { $match: { author: { $in: followedIds } } },
+    { $sort: { createdDate: -1 } },
+  ]);
 };
 
 module.exports = Post;

@@ -82,9 +82,10 @@ exports.register = function (req, res) {
     });
 };
 
-exports.home = function (req, res) {
+exports.home = async function (req, res) {
   if (req.session.user) {
-    res.render("home-dashboard");
+    let posts = await Post.getFeed(req.visitorId);
+    res.render("home-dashboard", { posts: posts });
   } else {
     res.render("home-guest", {
       regErrors: req.flash("regErrors"),
@@ -107,7 +108,6 @@ exports.ifUserExists = function (req, res, next) {
 exports.profilePostsScreen = function (req, res) {
   Post.findByAuthorId(req.profileUser._id)
     .then((posts) => {
-      console.log(`profilePostsScreen`, posts);
       res.render("profile", {
         profileUsername: req.profileUser.username,
         profileAvatar: req.profileUser.avatar,
