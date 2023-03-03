@@ -106,3 +106,18 @@ exports.profilePostsScreen = function (req, res) {
       res.render("404");
     });
 };
+
+exports.profileFollowersScreen = async function (req, res) {
+  try {
+    let followers = await Follow.getFollowersById(req.profileUser._id);
+    res.render("profile-followers", {
+      profileUsername: req.profileUser.username,
+      profileAvatar: req.profileUser.avatar,
+      isFollowing: req.isFollowing,
+      isVisitorsProfile: req.isVisitorsProfile,
+      followers: followers,
+    });
+  } catch {
+    res.render("404");
+  }
+};
