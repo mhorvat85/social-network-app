@@ -26,7 +26,7 @@ export default class Chat {
   }
 
   openConnection() {
-    alert("Opening a connection");
+    this.socket = io();
   }
 
   injectHTML() {
