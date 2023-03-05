@@ -5,12 +5,18 @@ export default class Chat {
     this.openIcon = document.querySelector(".header-chat-icon");
     this.injectHTML();
     this.closeIcon = document.querySelector(".chat-title-bar-close");
+    this.chatField = document.querySelector("#chatField");
+    this.chatForm = document.querySelector("#chatForm");
     this.events();
   }
 
   events() {
     this.openIcon.addEventListener("click", () => this.showChat());
     this.closeIcon.addEventListener("click", () => this.hideChat());
+    this.chatForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      this.sendMessageToServer();
+    });
   }
 
   showChat() {
@@ -27,6 +33,17 @@ export default class Chat {
 
   openConnection() {
     this.socket = io();
+    this.socket.on("chatMessageFromServer", function (data) {
+      alert(data.message);
+    });
+  }
+
+  sendMessageToServer() {
+    this.socket.emit("chatMessageFromBrowser", {
+      message: this.chatField.value,
+    });
+    this.chatField.value = "";
+    this.chatField.focus();
   }
 
   injectHTML() {
