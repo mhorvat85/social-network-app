@@ -1,5 +1,3 @@
-const { ObjectId } = require("mongodb");
-
 const Post = require("../models/Post");
 
 exports.viewCreateScreen = function (req, res) {
