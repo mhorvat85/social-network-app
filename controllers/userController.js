@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const sendgrid = require("@sendgrid/mail");
+sendgrid.setApiKey(process.env.SENDGRIDAPIKEY);
 
 const User = require("../models/User");
 const Post = require("../models/Post");
@@ -121,6 +123,13 @@ exports.register = function (req, res) {
   user
     .register()
     .then(() => {
+      sendgrid.send({
+        to: "youremail@provider.com", // register to sendgrid to activate this functionality
+        from: "youremail@provider.com", // sender authentication
+        subject: "Thank you for registering to this application!",
+        text: "You did a great job registering to this application.",
+        html: "You did a <strong>great</strong> job registering to this application.",
+      });
       req.session.user = {
         username: user.data.username,
         avatar: user.avatar,
