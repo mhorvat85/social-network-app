@@ -122,7 +122,7 @@ export default class RegistrationForm {
     el.nextElementSibling.classList.remove("liveValidateMessage--visible");
   }
 
-  usernameAfterDelay() {
+  async usernameAfterDelay() {
     if (this.username.value.length < 3) {
       this.showValidationError(
         this.username,
@@ -130,26 +130,26 @@ export default class RegistrationForm {
       );
     }
     if (!this.username.errors) {
-      axios
-        .post("/doesUsernameExist", { username: this.username.value })
-        .then((response) => {
-          if (response.data) {
-            this.showValidationError(
-              this.username,
-              "That username is already taken."
-            );
-            this.username.isUnique = false;
-          } else {
-            this.username.isUnique = true;
-          }
-        })
-        .catch(() => {
-          console.log("Please try again later.");
+      try {
+        const response = await axios.post("/doesUsernameExist", {
+          username: this.username.value,
         });
+        if (response.data) {
+          this.showValidationError(
+            this.username,
+            "That username is already taken."
+          );
+          this.username.isUnique = false;
+        } else {
+          this.username.isUnique = true;
+        }
+      } catch {
+        console.log("Please try again later.");
+      }
     }
   }
 
-  emailAfterDelay() {
+  async emailAfterDelay() {
     if (!/^\S+@\S+$/.test(this.email.value)) {
       this.showValidationError(
         this.email,
@@ -157,23 +157,24 @@ export default class RegistrationForm {
       );
     }
     if (!this.email.errors) {
-      axios
-        .post("/doesEmailExist", { email: this.email.value })
-        .then((response) => {
-          if (response.data) {
-            this.email.isUnique = false;
-            this.showValidationError(
-              this.email,
-              "That email is already being used."
-            );
-          } else {
-            this.email.isUnique = true;
-            this.hideValidationError(this.email);
-          }
-        })
-        .catch(() => {
-          console.log("Please try again later.");
+      try {
+        const response = await axios.post("/doesEmailExist", {
+          email: this.email.value,
         });
+
+        if (response.data) {
+          this.email.isUnique = false;
+          this.showValidationError(
+            this.email,
+            "That email is already being used."
+          );
+        } else {
+          this.email.isUnique = true;
+          this.hideValidationError(this.email);
+        }
+      } catch {
+        console.log("Please try again later.");
+      }
     }
   }
 

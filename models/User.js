@@ -83,26 +83,26 @@ User.prototype.validate = function () {
 };
 
 User.prototype.login = function () {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     this.cleanUp();
-    usersCollection
-      .findOne({
+    try {
+      const attemptedUser = await usersCollection.findOne({
         username: this.data.username,
-      })
-      .then((attemptedUser) => {
-        if (
-          attemptedUser &&
-          bcrypt.compareSync(this.data.password, attemptedUser.password)
-        ) {
-          // access to user email address
-          this.data = attemptedUser;
-          this.getAvatar();
-          resolve("Congrats!!!");
-        } else {
-          reject("Invalid username / password");
-        }
-      })
-      .catch(() => reject("Please try again later."));
+      });
+      if (
+        attemptedUser &&
+        bcrypt.compareSync(this.data.password, attemptedUser.password)
+      ) {
+        // access to user email address
+        this.data = attemptedUser;
+        this.getAvatar();
+        resolve("Congrats!!!");
+      } else {
+        reject("Invalid username / password");
+      }
+    } catch {
+      reject("Please try again later.");
+    }
   });
 };
 
@@ -128,29 +128,27 @@ User.prototype.getAvatar = function () {
 };
 
 User.findByUsername = function (username) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     if (typeof username !== "string") {
       reject();
       return;
     }
-    usersCollection
-      .findOne({ username: username })
-      .then((userDoc) => {
-        if (userDoc) {
-          userDoc = new User(userDoc, true);
-          userDoc = {
-            _id: userDoc.data._id,
-            username: userDoc.data.username,
-            avatar: userDoc.avatar,
-          };
-          resolve(userDoc);
-        } else {
-          reject();
-        }
-      })
-      .catch(() => {
+    try {
+      let userDoc = await usersCollection.findOne({ username: username });
+      if (userDoc) {
+        userDoc = new User(userDoc, true);
+        userDoc = {
+          _id: userDoc.data._id,
+          username: userDoc.data.username,
+          avatar: userDoc.avatar,
+        };
+        resolve(userDoc);
+      } else {
         reject();
-      });
+      }
+    } catch {
+      reject();
+    }
   });
 };
 

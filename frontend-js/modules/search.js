@@ -42,17 +42,15 @@ export default class Search {
     this.previousValue = value;
   }
 
-  sendRequest() {
-    axios
-      .post("/search", {
+  async sendRequest() {
+    try {
+      const response = await axios.post("/search", {
         searchTerm: this.inputField.value,
-      })
-      .then((response) => {
-        this.renderResultsHTML(response.data);
-      })
-      .catch(() => {
-        alert("Request failed.");
       });
+      this.renderResultsHTML(response.data);
+    } catch {
+      alert("Request failed.");
+    }
   }
 
   renderResultsHTML(posts) {

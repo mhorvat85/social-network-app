@@ -43,24 +43,20 @@ Post.prototype.validate = function () {
   }
 };
 
-Post.prototype.create = function () {
-  return new Promise((resolve, reject) => {
-    this.cleanUp();
-    this.validate();
-    if (!this.errors.length) {
-      postsCollection
-        .insertOne(this.data)
-        .then((result) => {
-          resolve(result.insertedId);
-        })
-        .catch(() => {
-          this.errors.push("Please try again later.");
-          reject(this.errors);
-        });
-    } else {
-      reject(this.errors);
+Post.prototype.create = async function () {
+  this.cleanUp();
+  this.validate();
+  if (!this.errors.length) {
+    try {
+      const result = await postsCollection.insertOne(this.data);
+      return result.insertedId;
+    } catch (err) {
+      this.errors.push("Please try again later.");
+      throw this.errors;
     }
-  });
+  } else {
+    throw this.errors;
+  }
 };
 
 Post.prototype.update = function () {

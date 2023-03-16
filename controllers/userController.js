@@ -9,23 +9,20 @@ const Follow = require("../models/Follow");
 exports.apiGetPostsByUsername = async function (req, res) {
   try {
     let authorDoc = await User.findByUsername(req.params.username);
-    console.log(authorDoc);
     let posts = await Post.findByAuthorId(authorDoc._id);
-    console.log(posts);
     res.json(posts);
   } catch {
     res.json("Sorry, invalid user requested.");
   }
 };
 
-exports.doesUsernameExist = function (req, res) {
-  User.findByUsername(req.body.username)
-    .then(() => {
-      res.json(true);
-    })
-    .catch(() => {
-      res.json(false);
-    });
+exports.doesUsernameExist = async function (req, res) {
+  try {
+    await User.findByUsername(req.body.username);
+    res.json(true);
+  } catch {
+    res.json(false);
+  }
 };
 
 exports.doesEmailExist = async function (req, res) {
@@ -80,69 +77,63 @@ exports.apiMustBeLoggedIn = function (req, res, next) {
   }
 };
 
-exports.login = function (req, res) {
+exports.login = async function (req, res) {
   let user = new User(req.body);
-  user
-    .login()
-    .then(() => {
-      req.session.user = {
-        username: user.data.username,
-        avatar: user.avatar,
-        _id: user.data._id,
-      };
-      req.session.save(() => res.redirect("/"));
-    })
-    .catch((err) => {
-      req.flash("errors", err); // req.session.flash.errors = [err]
-      req.session.save(() => res.redirect("/"));
-    });
+  try {
+    await user.login();
+    req.session.user = {
+      username: user.data.username,
+      avatar: user.avatar,
+      _id: user.data._id,
+    };
+    req.session.save(() => res.redirect("/"));
+  } catch (err) {
+    req.flash("errors", err); // req.session.flash.errors = [err]
+    req.session.save(() => res.redirect("/"));
+  }
 };
 
-exports.apiLogin = function (req, res) {
+exports.apiLogin = async function (req, res) {
   let user = new User(req.body);
-  user
-    .login()
-    .then(() => {
-      res.json(
-        jwt.sign({ _id: user.data._id }, process.env.JWTSECRET, {
-          expiresIn: "7d",
-        })
-      );
-    })
-    .catch(() => {
-      res.json("Sorry, your values are not correct.");
-    });
+  try {
+    await user.login();
+    res.json(
+      jwt.sign({ _id: user.data._id }, process.env.JWTSECRET, {
+        expiresIn: "7d",
+      })
+    );
+  } catch {
+    res.json("Sorry, your values are not correct.");
+  }
 };
 
 exports.logout = function (req, res) {
   req.session.destroy(() => res.redirect("/"));
 };
 
-exports.register = function (req, res) {
+exports.register = async function (req, res) {
   let user = new User(req.body);
-  user
-    .register()
-    .then(() => {
-      sendgrid.send({
-        to: "youremail@provider.com", // register to sendgrid to activate this functionality
-        from: "youremail@provider.com", // sender authentication
-        subject: "Thank you for registering to this application!",
-        text: "You did a great job registering to this application.",
-        html: "You did a <strong>great</strong> job registering to this application.",
-      });
-      req.session.user = {
-        username: user.data.username,
-        avatar: user.avatar,
-        _id: user.data._id,
-      };
-      req.session.save(() => res.redirect("/"));
-    })
-    .catch((regErrors) => {
-      regErrors.forEach((err) => {
-        req.flash("regErrors", err);
-      });
-      req.session.save(() => res.redirect("/"));
+  try {
+    await user.register();
+    sendgrid.send({
+      to: "horvatmarko524@gmail.com", // register to sendgrid to activate this functionality
+      from: "horvat.marko2212@gmail.com", // sender authentication
+      subject: "Thank you for registering to this application!",
+      text: "You did a great job registering to this application.",
+      html: "You did a <strong>great</strong> job registering to this application.",
     });
+    req.session.user = {
+      username: user.data.username,
+      avatar: user.avatar,
+      _id: user.data._id,
+    };
+    req.session.save(() => res.redirect("/"));
+  } catch (regErrors) {
+    regErrors.forEach((err) => {
+      req.flash("regErrors", err);
+    });
+    req.session.save(() => res.redirect("/"));
+  }
 };
 
 exports.home = async function (req, res) {
@@ -156,38 +147,36 @@ exports.home = async function (req, res) {
   }
 };
 
-exports.ifUserExists = function (req, res, next) {
-  User.findByUsername(req.params.username)
-    .then((userDocument) => {
-      // for next func in stack
-      req.profileUser = userDocument;
-      next();
-    })
-    .catch(() => {
-      res.render("404");
-    });
+exports.ifUserExists = async function (req, res, next) {
+  try {
+    const userDocument = await User.findByUsername(req.params.username);
+    // for next func in stack
+    req.profileUser = userDocument;
+    next();
+  } catch {
+    res.render("404");
+  }
 };
 
-exports.profilePostsScreen = function (req, res) {
-  Post.findByAuthorId(req.profileUser._id)
-    .then((posts) => {
-      res.render("profile", {
-        profileUsername: req.profileUser.username,
-        profileAvatar: req.profileUser.avatar,
-        posts: posts,
-        isFollowing: req.isFollowing,
-        isVisitorsProfile: req.isVisitorsProfile,
-        currentPage: "posts",
-        counts: {
-          postsCount: req.postsCount,
-          followersCount: req.followersCount,
-          followingCount: req.followingCount,
-        },
-      });
-    })
-    .catch(() => {
-      res.render("404");
+exports.profilePostsScreen = async function (req, res) {
+  try {
+    const posts = await Post.findByAuthorId(req.profileUser._id);
+    res.render("profile", {
+      profileUsername: req.profileUser.username,
+      profileAvatar: req.profileUser.avatar,
+      posts: posts,
+      isFollowing: req.isFollowing,
+      isVisitorsProfile: req.isVisitorsProfile,
+      currentPage: "posts",
+      counts: {
+        postsCount: req.postsCount,
+        followersCount: req.followersCount,
+        followingCount: req.followingCount,
+      },
     });
+  } catch {
+    res.render("404");
+  }
 };
 
 exports.profileFollowersScreen = async function (req, res) {
