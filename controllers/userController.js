@@ -116,8 +116,8 @@ exports.register = async function (req, res) {
   try {
     await user.register();
     sendgrid.send({
-      to: "horvatmarko524@gmail.com", // register to sendgrid to activate this functionality
-      from: "horvat.marko2212@gmail.com", // sender authentication
+      to: "email@provider.com", // register to sendgrid to activate this functionality
+      from: "email@provider.com", // sender authentication
       subject: "Thank you for registering to this application!",
       text: "You did a great job registering to this application.",
       html: "You did a <strong>great</strong> job registering to this application.",
